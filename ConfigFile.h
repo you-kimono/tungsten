@@ -166,6 +166,15 @@ namespace tungsten
 
 			return Convert::string_to_T<ValueType>(contents.find(key)->second);
 		}
+
+		bool getValueOfKey(const std::string &key) const
+		{
+			if (!keyExists(key))
+				return false;
+
+			std::string value = Convert::string_to_T<std::string>(contents.find(key)->second);
+			return "true" == value;
+		}
 	};
 	
 }
