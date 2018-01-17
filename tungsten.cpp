@@ -108,6 +108,7 @@ int main(int argc, char *argv[])
 	tungsten::ConfigFile cfg("..\\config\\config.cfg");
 
 	bool separate_channels = cfg.getValueOfKey("separate_channels");
+	bool equalize_colors = cfg.getValueOfKey("equalize_colors");
 	bool show_histograms = cfg.getValueOfKey("show_histograms");
 	std::string image_store_path = cfg.getValueOfKey<std::string>("image_store_path", "");
 
@@ -144,6 +145,13 @@ int main(int argc, char *argv[])
 			tick++;
 			fps = frame_counter;
 			frame_counter = 0;
+		}
+
+		if (equalize_colors)
+		{
+			cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
+			cv::equalizeHist(img, img);
+			cv::cvtColor(img, img, cv::COLOR_GRAY2BGR);
 		}
 
 		if (capture_images) store_image_to_folder(img, image_store_path);
