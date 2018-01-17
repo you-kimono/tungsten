@@ -32,16 +32,34 @@ bool store_image_to_folder(cv::Mat &img, std::string path)
 	return true;
 }
 
+cv::Mat preprocess_frame(cv::Mat &image, tungsten::ConfigFile cfg)
+{
+	bool separate_channels = cfg.getValueOfKey("separate_channels");
+	int scale_factor = cfg.getValueOfKey<int>("scale_factor", 1);
+
+	if (separate_channels)
+	{
+		cv::Mat bgr[3];
+		cv::split(image, bgr);
+		image = bgr[0];
+		cv::cvtColor(image, image, cv::COLOR_GRAY2BGR);
+	}
+	if (scale_factor > 1)
+	{
+		int resized_width = image.cols / scale_factor;
+		int resized_height = image.rows / scale_factor;
+		cv::resize(image, image, cv::Size(resized_width, resized_height));
+	}
+	return image;
+}
+
 int main(int argc, char *argv[])
 {
 	std::cout << "Hello, World!!" << std::endl;
 
 	tungsten::ConfigFile cfg("..\\config\\config.cfg");
 
-	//bool exists = cfg.keyExists("separate_channels");
-	//bool separate_channels = cfg.getValueOfKey("separate_channels");
-	//bool should_be_false = cfg.getValueOfKey("should_be_false");
-	//bool not_present = cfg.getValueOfKey("not_present");
+	bool separate_channels = cfg.getValueOfKey("separate_channels");
 	std::string image_store_path = cfg.getValueOfKey<std::string>("image_store_path", "");
 
 	cv::VideoCapture cap(0);
@@ -59,9 +77,9 @@ int main(int argc, char *argv[])
 		cv::Mat frame;
 		cap >> frame;
 
-		cv::Mat bgr[3];
-		cv::split(frame, bgr);
-
+		cv::Mat img;
+		img = preprocess_frame(frame, cfg);
+		
 		frame_counter++;
 		std::time_t timeNow = std::time(0) - time_begin;
 
@@ -71,11 +89,11 @@ int main(int argc, char *argv[])
 			fps = frame_counter;
 			frame_counter = 0;
 		}
-		cv::cvtColor(bgr[0], bgr[0], cv::COLOR_GRAY2BGR);
-		cv::putText(bgr[0], cv::format("Average FPS=%d", fps), cv::Point(30, 30), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0, 0, 255));
-		cv::imshow("grayscale", bgr[0]);
 
-		if (capture_images) store_image_to_folder(bgr[0], image_store_path);
+		if (capture_images) store_image_to_folder(img, image_store_path);
+
+		cv::putText(img, cv::format("Average FPS=%d", fps), cv::Point(30, 30), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0, 0, 255));
+		cv::imshow("grayscale", img);
 
 		char key = cv::waitKey(30);
 		if (113 == key) break;

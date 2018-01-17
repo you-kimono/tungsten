@@ -8,6 +8,15 @@
 
 namespace tungsten
 {
+	void exitWithError(const std::string &error)
+	{
+		std::cout << error;
+		std::cin.ignore();
+		std::cin.get();
+
+		exit(EXIT_FAILURE);
+	}
+
 	class Convert
 	{
 	public:
@@ -43,15 +52,6 @@ namespace tungsten
 	private:
 		std::map<std::string, std::string> contents;
 		std::string fName;
-
-		void exitWithError(const std::string &error)
-		{
-			std::cout << error;
-			std::cin.ignore();
-			std::cin.get();
-
-			exit(EXIT_FAILURE);
-		}
 
 		void removeComment(std::string &line) const
 		{
